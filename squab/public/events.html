@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Squab</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link href="/css/normalize.css" rel="stylesheet">
+    <link href="/css/pickadate/default.css" rel="stylesheet">
+    <link href="/css/pickadate/default.date.css" rel="stylesheet">
+    <link href="/css/squab.css" rel="stylesheet">
+  </head>
+  <body>
+    <h1>Squab</h1>
+    <form id="search-form">
+      <div id="native-datepickers">
+        <input name="from" type="date" /><!--
+     --><input name="to" type="date" />
+      </div>
+      <div id="js-datepickers">
+        <fieldset>
+          <input name="from" type="text" id="from-text" placeholder="From date" />
+          <input type="text" id="from-date" placeholder="From date" tabindex="-1" />
+        </fieldset><!--
+     --><fieldset>
+          <input name="to" type="text" id="to-text" placeholder="To date" />
+          <input type="text" id="to-date" placeholder="To date" tabindex="-1" />
+        </fieldset>
+      </div>
+      <div>
+        <input name="source" type="search" placeholder="Source" /><!--
+     --><input name="uid" type="search" placeholder="User" /><!--
+     --><input name="value" type="search" placeholder="Event" /><!--
+     --><input name="url" type="search" placeholder="URL" />
+      </div>
+      <input type="submit" value="Search" />
+      <div class="search-tip">
+        Search values can be Regular Expressions i.e. <code>S(.*)uare</code>
+      </div>
+      <div class="search-info">
+        <input type="checkbox" id="autorefresh" checked="checked" />
+        <label for="autorefresh">Auto-refresh</label>
+        <span id="update-notice">(last updated at <span id="update-time"></span>)</span>
+      </div>
+    </form>
+    <!-- Backbone target -->
+    <div id="events"></div>
+    <script type="text/template" id="day-template">
+      <h2><%= formattedDate %></h2>
+      <ul class="day-events">
+      </ul>
+    </script>
+    <script type="text/template" id="event-template">
+      <span class="source" title="Only show posts from <%- source %>"><%- source %></span>
+      <span class="description">
+        <% if (url !== null) { %>
+          <a href="<%- url %>" target="_blank"><%- value %></a>
+        <% } else { %>
+          <%- value %>
+        <% } %>
+      </div>
+      <div class="meta">
+        <span class="user" title="Only show posts from <%- uid %>"><%- uid %></span> @ <span title="<%- dateString %>"><%- time %></span>
+      </div>
+    </script>
+    <script src="/js/lib/datejs/date-en-US.js"></script>
+    <script src="/js/lib/jquery-latest.js"></script>
+    <script src="/js/lib/pickadate/picker.js"></script>
+    <script src="/js/lib/pickadate/picker.date.js"></script>
+    <script src="/js/lib/pickadate/legacy.js"></script>
+    <script src="/js/lib/lodash.min.js"></script>
+    <script src="/js/lib/backbone-min.js"></script>
+    <script src="/js/lib/typeahead.min.js"></script>
+
+    <script src="/js/model/event.js"></script>
+    <script src="/js/collection/events.js"></script>
+    <script src="/js/view/day_view.js"></script>
+    <script src="/js/view/event_view.js"></script>
+    <script src="/js/view/events_view.js"></script>
+    <script src="/js/view/search_view.js"></script>
+    <script src="/js/router.js"></script>
+    <script src="/js/squab.js"></script>
+  </body>
+</html>
+

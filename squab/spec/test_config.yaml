@@ -1,0 +1,1 @@
+dbconn: "sqlite:///tmp/squab-rspec-unit.sqlite"

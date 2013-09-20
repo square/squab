@@ -1,0 +1,40 @@
+--- 
+# Subchannels will be joined, with bot notifications on.  The filters will
+# be applied as regex matches to the sources
+sub_channels: 
+  "#subchannel":
+    - "this|that"
+  "#subchannel2":
+    - "onlythis"
+  "#subchannel2":
+    - "com(pli|cat)ed.*regex"
+# The squab bot will join these channels, but not speak
+# This allows channels to post, but not have bot chatter in them
+join_channels:
+  - "#posthere"
+  - "#orhere"
+# The home channel is where the bot always lives.  The bot will not leave
+# this channel and always outputs all messages to here regardless of source
+home_channel: "#squab"
+# Where to save the most recently seen messages.  If this file is missing
+# the bot replays the last 5 messages (if the filter applies) and records
+# the latest ID
+message_file: /tmp/squab.msg
+# This should be the address of your squab web interface
+api_url: http://squab.example.com:8082/
+# If your IRC server has a password, put it here
+irc_password: secret_password
+# What the bot should call itself.  It makes sense to call it squab, but
+# if you hate that, don't!
+irc_nick: squab
+# If your IRC server is protected by SSL, use this
+irc_ssl: "true"
+# The port to your irc server
+irc_port: "6697"
+# The name of your IRC server
+irc_server: irc.example.com
+# If you should output all the IRC stuff that the bot sees to the console
+irc_verbose: "true"
+# If you want debug on... the bot will output everything it sees in a channel
+# you probably only want this for development purposes
+debug: "false"

@@ -1,0 +1,307 @@
+/* NOTE: These are the same font assets used by the Franklin project */
+
+@font-face {
+  font-family: "SQMarket";
+  src: url(https://squareup.com/fonts/sqmarket/sqmarket-light.eot);
+  src: url(https://squareup.com/fonts/sqmarket/sqmarket-light.eot?#iefix) format('eot'), url(https://squareup.com/fonts/sqmarket/sqmarket-light.woff) format('woff'), url(https://squareup.com/fonts/sqmarket/sqmarket-light.ttf) format('truetype'), url(https://squareup.com/fonts/sqmarket/sqmarket-light.svg) format('svg');
+  font-weight: 100;
+}
+
+@font-face {
+  font-family: "SQMarket";
+  src: url(https://squareup.com/fonts/sqmarket/sqmarket-regular.eot);
+  src: url(https://squareup.com/fonts/sqmarket/sqmarket-regular.eot?#iefix) format('eot'), url(https://squareup.com/fonts/sqmarket/sqmarket-regular.woff) format('woff'), url(https://squareup.com/fonts/sqmarket/sqmarket-regular.ttf) format('truetype'), url(https://squareup.com/fonts/sqmarket/sqmarket-regular.svg) format('svg');
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "SQMarket";
+  src: url(https://squareup.com/fonts/sqmarket/sqmarket-medium.eot);
+  src: url(https://squareup.com/fonts/sqmarket/sqmarket-medium.eot?#iefix) format('eot'), url(https://squareup.com/fonts/sqmarket/sqmarket-medium.woff) format('woff'), url(https://squareup.com/fonts/sqmarket/sqmarket-medium.ttf) format('truetype'), url(https://squareup.com/fonts/sqmarket/sqmarket-medium.svg) format('svg');
+  font-weight: 500;
+}
+
+@font-face {
+  font-family: "SQMarket";
+  src: url(https://squareup.com/fonts/sqmarket/sqmarket-medium.eot);
+  src: url(https://squareup.com/fonts/sqmarket/sqmarket-medium.eot?#iefix) format('eot'), url(https://squareup.com/fonts/sqmarket/sqmarket-medium.woff) format('woff'), url(https://squareup.com/fonts/sqmarket/sqmarket-medium.ttf) format('truetype'), url(https://squareup.com/fonts/sqmarket/sqmarket-medium.svg) format('svg');
+  font-weight: bold;
+}
+
+@-webkit-keyframes pulse {
+  0% { background-color: #27a6e1; }
+  50% { background-color: #32beff; }
+}
+
+body {
+  font-family: 'SQMarket', 'Helvetica Neue', Helvetica, sans-serif;
+  max-width: 620px;
+  margin: 60px auto;
+  padding: 0 20px;
+  color: #162633;
+}
+
+h1 {
+  margin-top: 0;
+}
+
+h2 {
+  color: #808487;
+  font-size: 20px;
+  font-weight: 100;
+  margin-bottom: 24px;
+}
+
+a {
+  color: #49b1e4;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+form {
+  margin-bottom: 25px;
+}
+
+fieldset {
+  padding: 0;
+  border: 0;
+  margin: 0;
+  display: inline-block;
+  position: relative;
+}
+
+input[type="date"],
+input[type="search"],
+input[type="submit"],
+input[type="text"],
+.tt-query {
+  -moz-box-sizing: border-box;
+  box-sizing: border-box; 
+  padding: 0 5px;
+}
+
+input[type="date"],
+input[type="search"],
+input[type="submit"],
+input[type="text"] {
+  margin-bottom: 8px;
+  border: solid 1px #AAA;
+  display: inline-block;
+}
+
+input[type="date"],
+input[type="search"],
+input[type="text"] {
+  height: 26px; 
+  margin-right: 8px;
+}
+
+input[type="date"]:focus,
+input[type="search"]:focus,
+input[type="submit"]:focus,
+input[type="text"]:focus {
+  outline: none;
+  border-color: #27a6e1;
+}
+
+input[type="date"],
+input[type="text"] {
+  width: calc(50% - 4px);
+}
+
+input[type="search"] {
+  padding-left: 0;
+}
+
+.twitter-typeahead,
+input[name="value"],
+input[name="url"] {
+  width: calc(25% - 6px);
+}
+
+input[name="to"],
+input[name="url"] {
+  margin-right: 0;
+}
+
+input[type="submit"] {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  border-radius: 23px;
+  background-color: #27a6e1;
+  color: white;
+  border: none;
+}
+
+input[type="submit"]:hover {
+  background-color: #32beff;
+}
+
+input[type="submit"].searching {
+  -webkit-animation: 1s pulse infinite;
+  animation: 1s pulse infinite;
+}
+
+input[type="checkbox"] {
+  vertical-align: top;
+}
+
+#js-datepickers fieldset {
+  width: calc(50% - 4px);
+}
+
+#js-datepickers fieldset:first-child {
+  margin-right: 8px;
+}
+
+#from-text,
+#to-text {
+  width: 100%;
+}
+
+#from-date,
+#to-date {
+  position: absolute;
+  right: .9em;
+  top: .4em;
+  padding: 0;
+  margin: 0;
+  width: 0;
+  height: 0;
+  background: transparent;
+  color: #333;
+  border: 0;
+  border-left: .5em solid transparent;
+  border-right: .5em solid transparent;
+  border-top: 0.7em solid #333;
+  cursor: pointer;
+}
+
+.search-tip,
+.search-info {
+  color: #808487;
+  font-weight: 100;
+  font-size: smaller;
+}
+
+.search-tip {
+  margin-bottom: 8px;
+}
+
+#update-notice {
+  opacity: 0;
+  transition: opacity .2s;
+}
+
+#update-notice.visible {
+  opacity: 1;
+}
+
+ul {
+  padding: 0;
+  margin: 0;
+}
+
+li {
+  list-style-type: none;
+  position: relative;
+  margin: 1em 0;
+  padding-left: 150px;
+  line-height: 1.4;
+}
+
+.day {
+  margin: 50px 0;
+}
+
+.source {
+  position: absolute;
+  width: 120px;
+  font-weight: bold;
+  left: 0;
+  top: 0;
+  margin-bottom: 4px;
+}
+
+.meta {
+  color: #A8A9AB;
+  font-size: smaller;
+  margin-top: 4px;
+}
+
+.source:hover,
+.user:hover {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* Typeahead */
+
+.twitter-typeahead {
+  vertical-align: top;
+  margin-right: 8px;
+  margin-bottom: 8px
+}
+
+.twitter-typeahead input {
+  margin: 0;
+}
+
+.tt-query {
+  width: 100%;
+}
+
+.tt-hint {
+  display: none !important;
+}
+
+.tt-dropdown-menu {
+  background-color: white;
+  border: solid 1px #A8A9AB;
+  width: 160px;
+  padding: 0 5px 0 9px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.4)
+}
+
+.tt-dropdown-menu p {
+  margin: 5px 0;
+}
+
+.tt-is-under-cursor {
+  color: #27a6e1;
+}
+
+@media screen and (max-width: 500px) {
+  body {
+    margin: 0;
+    padding: 20px;
+  }
+  .day-events li {
+    padding-left: 0;
+  }
+  .source {
+    position: static;
+    display: block;
+    width: 100%;
+  }
+  input[type="date"],
+  input[type="search"],
+  input[type="text"],
+  .twitter-typeahead,
+  #js-datepickers fieldset {
+    width: 100%;
+    margin-right: 0;
+  }
+  .twitter-typeahead {
+    display: block !important;
+  }
+  .tt-dropdown-menu {
+    width: 100%;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+  }
+}

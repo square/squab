@@ -1,0 +1,337 @@
+#!/usr/bin/ruby20
+require 'net/http'
+require 'yaml'
+require 'squab-client'
+
+# Global bot, but populate the namespace local
+# Needed to work with threads
+require 'isaac/bot'
+$bot = Isaac::Bot.new
+%w(configure helpers on).each do |method|
+  eval(<<-EOF)
+    def #{method}(*args, &block)
+      $bot.#{method}(*args, &block)
+    end
+  EOF
+end
+
+squab_confs = %w(/etc/squab/squab-bot.yaml /etc/squab-bot.yaml)
+local_squab_conf = File.join(File.dirname(__FILE__), 'squab-bot.yaml')
+squab_confs.push(local_squab_conf)
+
+$config = nil
+squab_confs.each do |cf|
+  begin
+    puts "Looking at " + cf
+    if File.exists?(cf)
+      $config = YAML.load_file(cf)
+      break
+    end
+  rescue
+    next
+  end
+end
+
+if $config.nil?
+  puts "No parsable config found"
+  exit()
+end
+
+def string_to_bool(string)
+  if string =~ /^true$/i
+    true
+  elsif string =~ /^false$/i
+    false
+  else
+    nil
+  end
+end
+
+def mainloop()
+  configure do |c|
+    c.nick = $config['irc_nick']
+    c.server = $config['irc_server']
+    c.port = $config['irc_port'].to_i
+    c.password = $config['irc_password']
+    c.ssl = string_to_bool($config['irc_ssl'])
+    c.verbose = string_to_bool($config['irc_verbose'])
+  end
+  
+  on :connect do
+    if not $config['sub_channels'].member?($config['home_channel'])
+      $config['sub_channels'][$config['home_channel']] = /.*/
+    end
+    for irc_chan in $config['sub_channels'].keys
+      $config['sub_channels'][irc_chan] = /#{$config['sub_channels'][irc_chan]}/
+      join irc_chan
+    end
+    for irc_chan in $config['join_channels']
+      join irc_chan
+    end
+  end
+  
+  on :channel, /^#{$config['irc_nick']}: help/i do
+    msg channel, "You can post things to Squab by typing:"
+    msg channel, ".sq <thing to say>"
+    msg channel, "Other commands:"
+    msg channel, "info -- state what channels and topics are being output"
+    msg channel, 'speak [on|off] -- Output messages from squab to the channel'
+    msg channel, 'filter <regex> -- Filter the output to this channel based'
+    msg channel, '  on a regex.  Use .* for everything'
+    msg channel, 'post <msg> -- Post a message to squab'
+    msg channel, 'search <thing> -- search for a thing in a squab message'
+    msg channel, 'join <channel> -- Join a channel'
+    msg channel, 'leave -- Leave this channel'
+  end
+
+  on :channel, /^#{$config['irc_nick']}: info/i do
+    if $config['sub_channels'].member?(channel)
+      msg channel, "Your filter is " + $config['sub_channels'][channel].source
+      sc = Squab::Client.new()
+      sources = JSON.parse(sc.list_sources)
+      source_list = []
+      sources.each do |s|
+        if $config['sub_channels'][channel].match(s)
+          source_list.push(s)
+        end
+      end
+      msg channel, "Based on the filter regex I will output the following sources to this channel:"
+      msg channel, source_list.join(', ')
+    else
+      msg channel, "I don't currently output anything to this channel"
+    end
+  end
+
+  on :channel, /^#{$config['irc_nick']}: speak (\S+)/i do
+    if match[0] =~ /^on$/i
+      if $config['sub_channels'].member?(channel)
+        msg channel, "I already speak in this channel."
+      else
+        $config['sub_channels'][channel] = /.*/
+        msg channel, "Ok, I'll start sending all squab output to this channel."
+        msg channel, "Use 'filter' if you'd like to limit what I output."
+      end
+    elsif match[0] =~ /^off$/i
+      if channel == $config['home_channel']
+        msg channel, "Sorry, I can't stop talking in my home channel"
+      else
+        $config['sub_channels'].delete(channel)
+        msg channel, "Ok, I'll stop talking"
+      end
+    else
+      msg channel, "I accept 'on' and 'off' for this command, you said '#{match[0]}'"
+    end
+  end
+
+  on :channel, /^#{$config['irc_nick']}: filter (.*)/i do
+    if channel == $config['home_channel']
+      msg channel, "#{channel} always outputs all sources"
+    else
+      filter_re = /#{match[0]}/
+      $config['sub_channels'][channel] = filter_re
+      msg channel, "Adding filter #{match[0]} to #{channel}"
+    end
+  end
+  
+  on :channel, /^(\.sq|#{$config['irc_nick']}: post)\s+(.*)$/i do
+    sc = Squab::Client.new()
+    sc.source = channel
+    sc.uid = nick
+    try_count = 0
+    begin
+      sc.send(match[1])
+      msg channel, "Posted to Squab"
+    rescue SendEventFailed
+      try_count += 1
+      if try_count > 3
+        msg channel, "Couldn't send event right now, please retry later"
+      else
+        sleep 1
+        retry
+      end
+    end
+  end
+
+  on :channel, /^(\.sq|#{$config['irc_nick']}: search)\s+(.*)$/i do
+    sc = Squab::Client.new()
+    begin
+      res = JSON.parse(sc.simple_search(match[1]))
+      src = event['source']
+      usr = event['uid']
+      val = event['value'][0..255]
+      url = event['url']
+      res.each do |event|
+        msg channel, "[#{src}][#{usr}] #{value} #{url}"
+      end
+    rescue => e
+      msg channel, "Search failed: #{e}"
+    end
+  end
+
+  on :channel, /^#{$config['irc_nick']}: leave$/i do
+    if channel === $config['home_channel']
+      msg channel, "I can't leave this channel, it's where I say stuff"
+    else
+      msg channel, "Bye!"
+      part channel
+    end
+  end
+
+  on :private, /leave (\S+)/i do
+    if match[0] == $config['home_channel']
+      msg nick, "I can't leave that channel, that's my home!"
+    elsif match[0] =~ /^#/
+      msg match[0], "#{nick} asked me to leave, bye!"
+      msg nick, "Alright, leaving  #{match[0]}"
+      part match[0]
+    else
+      msg channel, "That doesn't seem like a channel name"
+    end
+  end
+
+  on :channel, /^#{$config['irc_nick']}: join (\S+)/ do
+    if match[0] =~ /^#/
+      msg channel, "Alright, heading over to #{match[0]}"
+      join match[0]
+    else
+      msg channel, "That doesn't seem like a channel name"
+    end
+  end
+
+  on :private, /^join (\S+)/ do
+    if match[0] =~ /^#/
+      msg nick, "Alright, heading over to #{match[0]}"
+      join match[0]
+    else
+      msg nick, "That doesn't seem like a channel name"
+    end
+  end
+
+  on :channel, /^#{$config['irc_nick']}:/ do
+    msg channel, "Hey, #{nick}, I'm a bot. You can ask me for 'help'"
+  end
+
+  # This will repeat everything said in the channel so you can see what
+  # squab-bot is actually matching on.  Be careful with this, it will ruin
+  # real channels, so use a test channel
+  on :channel, /^(.*)$/ do
+    if string_to_bool($config['debug'])
+      msg channel, "DEBUG: " + match[0]
+    end
+  end
+
+  on :private do
+    msg nick, "Hi! I'm a bot! I live in #{$config['home_channel']}"
+    msg nick, "You can go there and ask me for 'help'"
+    msg nick, "I can also join another channel if you say 'join <channel>'"
+    msg nick, "I can also leave a channel if you say 'leave <channel>'"
+  end
+
+  on :extern_message do
+    msg channel, @message
+  end
+
+  $bot.start
+
+end
+
+# This is a parallel thread that calls to squab and gets recent messages
+# to play back into channels.  The home channel recieves everything and
+# subscribed channels may apply filters for what sources are output there
+def secondloop()
+  puts "Starting Squab Reader Loop"
+
+  sub_channels = $config['sub_channels']
+  message_file = $config['message_file']
+  api_url = $config['api_url']
+  latest_msg = 0
+  if File.exists?(message_file)
+    File.open(message_file, 'r').each_line do |line|
+      latest_msg = line.strip.to_i
+    end
+  end
+
+  # Wait for the other thread to join irc
+  sleep 30
+  loop do
+    # Replay the last 5 messages if we don't have the latest message
+    url = api_url + '/starting/' + latest_msg.to_s
+    if latest_msg == 0
+      url = api_url + '/limit/5'
+    end
+    puts "Grabbing " + URI.parse(url).to_s
+
+    begin
+      resp = Net::HTTP.get_response(URI.parse(url))
+      json_messages = resp.body
+      messages = JSON.parse(json_messages)
+    rescue
+      puts "Couldn't get response from squab"
+      sleep 10
+      retry
+    end
+
+    messages.reverse.each do |message|
+      if message.has_key?('id')
+        id = message['id']
+        if id.to_i >= latest_msg
+          latest_msg = id.to_i + 1
+        end
+        value = message['value']
+        source = message['source']
+        uid = message['uid']
+        url = message['url']
+
+        # Limit to Tweet sized
+        # IRC message size is usually 510 bytes, but you don't want
+        # giant messages in your channels.  Add a url if you need more
+        # details
+        if value.length > 140 
+          value = value[0,140] + ' [message too long]'
+        end
+
+        irc_m = nil
+
+        # Only print source if it's the same case-insensitive string as uid
+        id_tag = if uid =~ /^#{Regexp.escape(source)}$/i
+          "[#{source}]"
+        else
+          "[#{uid}][#{source}]"
+        end
+
+        irc_m = if url.nil?
+          "#{id_tag} #{value}"
+        else
+          "#{id_tag} #{value} (#{url})"
+        end
+
+        begin
+          sub_channels.each do |ch, filter|
+            if source =~ filter
+              m = Isaac::Message.new(":squab PRIVMSG " + ch + " :" + irc_m)
+              $bot.dispatch(:extern_message, m)
+              puts "Posting to #{ch}: #{message}"
+            end
+          end
+          # Don't flood the channel
+          sleep 1
+        rescue
+          puts "Can't send to bot"
+          sleep 10
+          retry
+        end
+      end
+    end
+    File.open('/tmp/squab.msg', 'w') {|fh| fh.write(latest_msg)}
+    sleep 10
+  end
+end
+
+
+t1 = Thread.new{mainloop()}
+t2 = Thread.new{secondloop()}
+
+t1.join
+t2.join
+
+puts "ok its done"

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Squab API Documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/bootstrap-responsive.min.css" rel="stylesheet">
+    <link href="css/docs.css" rel="stylesheet">
+    <link href="css/prettify.css" rel="stylesheet">
+  </head>
+  <body>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="brand" href="./">Squab</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav">
+              <li class="">
+                <a href="./">Home</a>
+              </li>
+              <li class="">
+                <a href="./api.html">API</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    <code><pre>
+      POST Methods:
+      /api/v1/events
+      Format:
+      '{"value":"Obvious junk value", "uid":"nobody", "source":"myscript", "url":"http://squareup.com"}'
+      /api/v1/search
+      Format:
+      '{"uid":"regex", "source":"some.*other(regex)"}'
+      Fields supported for search are uid, source, value, and url.
+
+      You may also search in a timeslice by giving from: <epoch time> and to: <epoch time>.  The to: field is optional.  An example would be
+      '{"uid":"sally", "source":"deployment-system", "from":"1377101906", "to":"1377188306"}'
+      This will search for 1 days worth of events from the user sally and the source deployment-system.
+      
+      GET Methods
+      /api -- These docs
+      /api/v1/events -- The most recent events up to the last 1000
+      /api/v1/events/ID -- A specific event
+      /api/v1/events/limit/NUMBER -- Return a specific number of the most recent events 
+      /api/v1/events/starting/ID -- All events starting at the given ID
+      /api/v1/events/starting/ID/to/ID -- All events between the two IDs
+      /api/v1/events/since/EPOCH_SECOND -- All events starting at the given time
+      /api/v1/events/since/EPOCH_SECONDS/to/EPOCH_SECONDS -- All events between the two times
+      /api/v1/events/user/USERNAME -- All events from a specific user
+      /api/v1/events/search/FIELD/PATTERN -- Search events for a specific pattern ('all' can be specified for field)
+      /api/v1/users -- List all users
+      /api/v1/urls -- List all URLs
+      /api/v1/sources -- List all sources
+      
+      For a pretty interface go to http://localhost:8082/
+    </pre></code>
+    <script src="js/bootstrap.min.js"></script>
+  </body>
+</html>

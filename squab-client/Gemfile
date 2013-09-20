@@ -1,0 +1,9 @@
+source "http://rubygems.org"
+
+group :test do
+  gem 'webmock', '~>1.11.0'
+  gem 'vcr'
+  gem 'rspec'
+end
+
+gemspec

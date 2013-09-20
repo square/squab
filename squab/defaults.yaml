@@ -1,0 +1,5 @@
+port: 8082
+environment: development
+# Without a leading slash, this is relative to your lib/squab directory
+root: '../../'
+dbconn: "sqlite:///tmp/squab.sqlite"

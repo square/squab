@@ -1,0 +1,9 @@
+# The base URL of where your instance of squab is running
+#api_url: 'https://squab.example.com:8082'
+#
+# Whether or not to validate SSL (please do)
+# This doesn't apply if your URL is http://
+#ssl_verify: true
+#
+# The API prefix to call, currently only /api/v1 is supported
+#api_prefix: '/api/v1'

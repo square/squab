@@ -1,0 +1,86 @@
+#!/usr/bin/env ruby
+require 'rubygems'
+require 'squab-client'
+require 'optparse'
+
+options = {}
+options[:max_retry] = 3
+
+optparse = OptionParser.new do |opts|
+  opts.banner = "Usage: #{__FILE__} [options] [message]"
+  opts.on('-a', '--api URL', 'Set the API url to use') do |arg|
+    options[:api] = arg 
+  end
+  opts.on('-u', '--url URL', 'Set an explicit URL for your event') do |arg|
+    options[:url] = arg
+  end
+  opts.on('-U', '--user USER', 'Set an explicit user for your message') do |arg|
+    options[:user] = arg
+  end
+  opts.on('-S', '--source SOURCE', 'Set an explicit source for your message') do |arg|
+    options[:source] = arg
+  end
+  opts.on('-r', '--max-retry 3', "The maximum number of time to retry sending\n a message on failure (default: 3)") do |arg|
+    options[:max_retry] = arg
+  end
+  opts.on('--noverify', "Don't verify SSL.  You probably shouldn't do this") do |arg|
+    options[:no_verify] = true
+  end
+  opts.on_tail("-h", "--help", "Show this message") do
+    puts opts
+    exit
+  end
+end
+optparse.parse!
+
+sq = if (options[:api].nil?)
+  Squab::Client.new
+else
+  Squab::Client.new(:api => options[:api])
+end
+
+if options[:user]
+  sq.uid = options[:user]
+end
+
+if options[:source]
+  sq.source = options[:source]
+end
+
+if (options[:no_verify])
+  sq.ssl_verify = false
+end
+
+if ARGV.length < 1
+  puts optparse
+  raise "You must provide a message to send to Squab"
+  exit
+end
+message = ARGV.join(' ')
+puts message
+
+urls = if options[:url].nil?
+  URI.extract(message)
+else
+  [options[:url]]
+end
+
+try_count = 0
+begin
+  if urls.length == 1
+    sq.send(message, urls.first)
+  elsif urls.length > 1
+    puts "Multiple URLs found, using #{urls.last}"
+    sq.send(message, urls.last)
+  else
+    sq.send(message)
+  end
+rescue SendEventFailed
+  try_count += 1
+  if try_count > options[:max_retry]
+    $stderr.puts "Failed to send message to squab, the server is not responding correctly"
+  else
+    sleep 1
+    retry
+  end
+end

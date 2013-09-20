@@ -1,0 +1,87 @@
+#!/usr/bin/env ruby
+#
+# A squab stream to e-mail script
+#
+
+require 'rubygems'
+require 'optparse'
+require 'ostruct'
+require 'pp'
+require 'net/smtp'
+
+require 'squab-client'
+
+options = OpenStruct.new
+options.days = 1
+options.sources = []
+options.to = []
+options.from = "squab-digest@example.com"
+options.today = Time.now.strftime("%a, %b %d")
+
+optparse = OptionParser.new do |opts|
+  opts.banner = "Usarge #{__FILE__} [options]"
+  opts.on('-d', '--days DAYS', "Number of days to digest") do |arg|
+    options.days = arg.to_i
+  end
+  opts.on('-e', '--email EMAIL', "Where to send the digest") do |arg|
+    options.to.push(arg)
+  end
+  opts.on('-s', '--source SOURCE', 'Specify a source to digest.  Can be used multiple times') do |arg|
+    options.sources.push(arg)
+  end
+  opts.on('-a', '--api URL', "API URL for squab") do |arg|
+    options.api = arg
+  end
+  opts.on('-D', '--dry-run', "Don't send mail, output the message to stdout") do
+    options.dry = true
+  end
+end
+
+optparse.parse!
+
+sc = if options.api
+  Squab::Client.new(:api => options.api)
+else
+  Squab::Client.new()
+end
+
+if options.sources.empty?
+  $stderr.puts optparse
+  $stderr.puts "\n[ERROR] You must supply a source to digest (-s)"
+  exit 1
+end
+
+if options.to.empty?
+  $stderr.puts optparse
+  $stderr.puts "\n[ERROR] You must supply an email to send to (-e)"
+  exit 1
+end
+
+since = Time.now.to_i - (86400 * options.days.to_i)
+message = <<-EOM.gsub(/^\s+/, '')
+  From: #{options.from}
+  To: #{options.to.join(',')}
+  Subject: Squab Digest Report for #{options.today}
+EOM
+
+message << "\n\n"
+
+options.sources.each do |src|
+  search_params = { :source => src,
+                    :from => since }
+
+  res = JSON.parse(sc.search(search_params))
+  message << "#{src} events from the last #{options.days} days\n\n"
+  res.each do |event|
+    message << sprintf("%-16s -- %s\n", event['uid'], event['value'])
+  end
+  message << "\n\n"
+end
+
+if options.dry
+  puts message
+else
+  Net::SMTP.start('localhost', 25) do |smtp|
+    smtp.send_message message, options.from, options.to
+  end
+end
