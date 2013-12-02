@@ -243,3 +243,45 @@ describe Squab::Events do
     expect(urls).to eq uniq_orig
   end
 end
+
+# This section is specifically for search bugs/regressions
+describe Squab::Events do
+  before(:all) do
+    @config = get_test_config
+    TestDBHelper.teardown(@config['dbconn'])
+  end
+
+  before do
+    @dbconn = @config['dbconn']
+    @squab = Squab::Events.new(@dbconn, json: false)
+  end
+
+  after do
+    TestDBHelper.teardown(@config['dbconn'])
+  end
+
+  it "passing nil or empty-strings as search params is like not passing those params at all" do
+    broken = Squab::Event.new(
+      'Mauris accumsan lacus nec dolor',
+      'http://auerconnelly.biz/alyon_johnston',
+      'arlie.simonis',
+      nil,               # nil source
+    )
+    working = Squab::Event.new(
+      'Mauris accumsan lacus nec dolor',
+      'http://auerconnelly.biz/alyon_johnston',
+      'arlie.simonis',
+      'asdfasdf',
+    )
+    @squab.add_event(broken)
+    @squab.add_event(working)
+
+    search_params = { :source => 'asdfasdf' }
+    nil_params = { :value => nil, :source => 'asdfasdf', :uid => nil, :url => nil }
+    empty_params = { :value => '', :source => 'asdfasdf', :uid => '', :url => '' }
+
+    result = @squab.search(search_params)
+    expect(@squab.search(nil_params)).to eq result
+    expect(@squab.search(empty_params)).to eq result
+  end
+end

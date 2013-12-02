@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 Gem::Specification.new do |s|
   s.name        = "squab-bot"
-  s.version     = "1.3.0"
+  s.version     = "1.3.2"
   s.license     = "Apache 2.0"
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Grier Johnson"]
@@ -18,7 +18,7 @@ Gem::Specification.new do |s|
   s.default_executable = %q{squab-bot}
   s.executables = %W{ squab-bot }
 
-  s.files        = Dir.glob('lib/*') + Dir.glob('bin/**/**/*') + %w(README.md)
+  s.files        = Dir.glob('lib/*') + Dir.glob('bin/*') + %w(README.md)
   s.extra_rdoc_files = ["LICENSE.md"]
   s.rdoc_options = ["--charset=UTF-8"]
 end

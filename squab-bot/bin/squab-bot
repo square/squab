@@ -37,24 +37,14 @@ if $config.nil?
   exit()
 end
 
-def string_to_bool(string)
-  if string =~ /^true$/i
-    true
-  elsif string =~ /^false$/i
-    false
-  else
-    nil
-  end
-end
-
 def mainloop()
   configure do |c|
     c.nick = $config['irc_nick']
     c.server = $config['irc_server']
     c.port = $config['irc_port'].to_i
     c.password = $config['irc_password']
-    c.ssl = string_to_bool($config['irc_ssl'])
-    c.verbose = string_to_bool($config['irc_verbose'])
+    c.ssl = $config['irc_ssl']
+    c.verbose = $config['irc_verbose']
   end
   
   on :connect do
@@ -152,7 +142,7 @@ def mainloop()
     end
   end
 
-  on :channel, /^(\.sq|#{$config['irc_nick']}: search)\s+(.*)$/i do
+  on :channel, /^#{$config['irc_nick']}: search\s+(.*)$/i do
     sc = Squab::Client.new()
     begin
       res = JSON.parse(sc.simple_search(match[1]))
@@ -215,7 +205,7 @@ def mainloop()
   # squab-bot is actually matching on.  Be careful with this, it will ruin
   # real channels, so use a test channel
   on :channel, /^(.*)$/ do
-    if string_to_bool($config['debug'])
+    if $config['debug']
       msg channel, "DEBUG: " + match[0]
     end
   end
@@ -244,7 +234,10 @@ def secondloop()
   sub_channels = $config['sub_channels']
   message_file = $config['message_file']
   api_url = $config['api_url']
+  strict_ssl = $config.fetch('strict_ssl', true)
+  squab_client = Squab::Client.new(:api => api_url)
   latest_msg = 0
+  messages = []
   if File.exists?(message_file)
     File.open(message_file, 'r').each_line do |line|
       latest_msg = line.strip.to_i
@@ -254,19 +247,27 @@ def secondloop()
   # Wait for the other thread to join irc
   sleep 30
   loop do
-    # Replay the last 5 messages if we don't have the latest message
-    url = api_url + '/starting/' + latest_msg.to_s
-    if latest_msg == 0
-      url = api_url + '/limit/5'
-    end
-    puts "Grabbing " + URI.parse(url).to_s
-
+    puts "Polling Squab..."
     begin
-      resp = Net::HTTP.get_response(URI.parse(url))
-      json_messages = resp.body
-      messages = JSON.parse(json_messages)
-    rescue
-      puts "Couldn't get response from squab"
+      if latest_msg == 0
+        # Replay the default number of messages if we don't have a latest
+        messages = squab_client.get
+      else
+        messages = squab_client.get_from_event(latest_msg)
+      end
+      messages = JSON.parse(messages)
+    rescue OpenSSL::SSL::SSLError => e
+      puts "SSL Error: #{e}"
+      if not strict_ssl
+        # Disable ssl if we're not being strict about it
+        puts "Disabling strict ssl verification"
+        squab_client.ssl_verify = false
+      else
+        sleep 10
+      end
+      retry
+    rescue => e
+      puts "Couldn't get messages from squab: #{e}"
       sleep 10
       retry
     end
