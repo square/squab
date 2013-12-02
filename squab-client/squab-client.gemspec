@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 Gem::Specification.new do |s|
   s.name        = "squab-client"
-  s.version     = "1.3.1"
+  s.version     = "1.4.0"
   s.license     = "Apache 2.0"
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Grier Johnson"]
@@ -12,7 +12,6 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = ">= 1.3.6"
 
-  s.add_dependency("json", ">=1.7.4")
   s.executables = %W{ squawk }
 
   s.files        = Dir.glob('lib/*') + Dir.glob('bin/*') + %w(README.md)

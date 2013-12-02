@@ -2,6 +2,7 @@ require 'net/http'
 require 'net/https'
 require 'rubygems'
 require 'json'
+require 'yaml'
 require 'etc'
 
 class SendEventFailed < StandardError
@@ -97,7 +98,6 @@ module Squab
     end
 
     def get_api(url)
-      # OSS: alter this before upstream
       url ? URI.parse(url) :  URI.parse(
         "http://squab/"
       )
@@ -109,13 +109,6 @@ module Squab
       # Instance override
       if File.exist?(config_file)
         @config = YAML.load(File.open(config_file).read)
-        @config.each do |k, v|
-          if v.match(/\Atrue\z/i)
-            @config[k] = true
-          elsif v.match(/\Afalse\z/i)
-            @config[k] = false
-          end
-        end
       else
         @config = {}
       end

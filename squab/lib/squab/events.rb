@@ -78,9 +78,18 @@ module Squab
       ret_limit = search_params.delete(:limit)
       all_events = event_slice(search_params)
 
+      # Filter out nils and empty strings up front
+      # This allows the catch-all default-all to still work
+      valid_search_params = {}
+      search_params.each do |k,v|
+        next if v.nil?
+        next if v.empty?
+        valid_search_params[k] = v
+      end
+
       # Short circuit here and give back all events if there's no search
       # parameters
-      if search_params.empty?
+      if valid_search_params.empty?
         if ret_limit
           return all_events.limit(ret_limit)
         else
@@ -92,7 +101,7 @@ module Squab
 
       all_events.each do |event|
         matched = false
-        search_params.each do |k, v|
+        valid_search_params.each do |k, v|
           # Silently ignore bad search fields
           if event[k]
             if event[k].match(/#{v}/i)

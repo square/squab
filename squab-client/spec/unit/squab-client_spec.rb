@@ -12,7 +12,6 @@ describe "Squab::Client" do
 
   it 'creates a client with sane defaults' do
     sc = Squab::Client.new()
-    # OSS: Alter this before upstream
     expect(sc.api_url.to_s).to eq "http://squab/"
     expect(sc.source).to eq "rspec"
     expect(sc.uid).to eq @myself
